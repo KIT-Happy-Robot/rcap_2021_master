@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>rcap_2021_master</name>
+  <version>1.0.0</version>
+  <description>The rcap_2021_master package</description>
+  <maintainer email="kit.robocup.home@gmail.com">issei</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <export>
+    <metapackage/>
+  </export>
+</package>

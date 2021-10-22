@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<launch>
+  <node name="yumeko_inspection" pkg="rcap_2021_master" type="yumeko_inspection.py" />
+
+</launch>
