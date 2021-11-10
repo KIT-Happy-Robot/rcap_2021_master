@@ -2,9 +2,13 @@
 # -*- coding: utf-8 -*-
 
 import rospy
+import rosparam
 import smach
 import smach_ros
 # import descsc
+
+from happymimi_msgs.srv import SimpleTrg
+from happymimi_navigation.srv import NaviCoord
 
 
 class ApproachGuest(smach.State):
@@ -12,23 +16,28 @@ class ApproachGuest(smach.State):
         smach.State.__init__(self, outcomes = ['approach_finish'],
                              input_keys = ['g_count_in'])
         # Service
-        # self.navi_srv = rospy.ServiceProxy('/navi_coord_server', NaviCoord)
+        self.gen_coord_srv = rospy.ServiceProxy('/human_coord_generator', SimpleTrg)
+        self.navi_srv = rospy.ServiceProxy('/navi_coord_server', NaviCoord)
 
-        self.coord_list = rospy.getparam('/fmm_human_coord')
-        self.human_coord = []
+        self.coord_dict = rospy.get_param('/human_location')
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: APPROACH_GUEST")
         guest_num = userdata.g_count_in
+        guest_name = "human_" + str(guest_num)
         if guest_num == 0:
-            tts_srv("Move to First guest")
-            # 座標生成
-            rospy.loginfo("Zahyo tukuruyo")
+            self.gen_coord_srv()
         else:
             pass
-        self.human_coord = coord_list[guest_num]
-        # 人接近アクションサーバ処理
+        tts_srv("Move to guest")
         # self.navi_srv(slef.human_coord)
+        if guest_name in self.coord_dict:
+            coord_list = self.coord_dict[guest_name]
+            print coord_list
+            self.navi_srv(coord_list)
+        else:
+            rospy.logerr("<" + guest_name + "> doesn't exist.")
+            return 'approach_finish'
 
 
 class FindFuture(smach.State):
