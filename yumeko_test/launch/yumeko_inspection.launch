@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <launch>
-  <node name="yumeko_inspection" pkg="rcap_2021_master" type="yumeko_inspection.py" />
+  <node name="enter_server" pkg="enter_room" type="enter_server.py" />
+
+  <node name="yumeko_inspection" pkg="yumeko_test" type="yumeko_inspection.py" output="screen"/>
 
 </launch>
