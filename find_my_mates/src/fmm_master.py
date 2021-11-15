@@ -7,8 +7,11 @@ import smach
 import smach_ros
 # import descsc
 
-from happymimi_msgs.srv import SimpleTrg
-from happymimi_navigation.srv import NaviCoord
+from happymimi_msgs.srv import SimpleTrg, StrTrg
+from happymimi_navigation.srv import NaviLocation, NaviCoord
+from happymimi_voice_msgs.srv import TTS
+# speak
+tts_srv = rospy.ServiceProxy('/tts', TTS)
 
 
 class ApproachGuest(smach.State):
@@ -17,9 +20,8 @@ class ApproachGuest(smach.State):
                              input_keys = ['g_count_in'])
         # Service
         self.gen_coord_srv = rospy.ServiceProxy('/human_coord_generator', SimpleTrg)
-        self.navi_srv = rospy.ServiceProxy('/navi_coord_server', NaviCoord)
-
-        self.coord_dict = rospy.get_param('/human_location')
+        slef.ap_srv = rospy.ServiceProxy('/approach_person_server', StrTrg)
+        self.coord_dict = rospy.get_param('/tmp_human_location')
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: APPROACH_GUEST")
@@ -30,13 +32,10 @@ class ApproachGuest(smach.State):
         else:
             pass
         tts_srv("Move to guest")
-        # self.navi_srv(slef.human_coord)
-        if guest_name in self.coord_dict:
-            coord_list = self.coord_dict[guest_name]
-            print coord_list
-            self.navi_srv(coord_list)
+        result = self.ap_srv(guest_num)
+        if result:
+            return 'approach_finish'
         else:
-            rospy.logerr("<" + guest_name + "> doesn't exist.")
             return 'approach_finish'
 
 
@@ -78,6 +77,8 @@ class TellFuture(smach.State):
                              input_keys = ['g_count_in', 'future_in'],
                              output_keys = ['g_count_out'])
         self.sentence_list = []
+        # Service
+        self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: TELL_FUATURE")
@@ -87,6 +88,7 @@ class TellFuture(smach.State):
             tts_srv("Finish Find My Mates. Thank you very much")
             return 'all_finish'
         else:
+            self.navi_srv('operator')
             pass
         for i in slef.sentence_list:
             tts_srv(self.sentence_list[i])
