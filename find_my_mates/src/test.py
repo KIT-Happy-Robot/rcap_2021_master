@@ -3,8 +3,7 @@
 
 import rospy
 import rosparam
-import descsc
-
+import fmmmod
 
 if __name__ == '__main__':
    lisc = LocINfoSC() 
