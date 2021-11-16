@@ -59,11 +59,12 @@ class FindFuture(smach.State):
         self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         # moduleを作る（サービスのクライアントまとめたやつ）
         if userdata.g_count_in == 0:
-            self.f1_sentence = SexInfoSC()
-            self.f2_sentence = AgeInfoSC()
+            rospy.loginfo("Hello")
+            # self.f1_sentence = SexInfoSC()
+            # self.f2_sentence = AgeInfoSC()
         elif userdata.g_count_in == 1:
-            self.f1_sentence = HeightInfoSC()
-            self.f2_sentence = ClothesInfoSC()
+            # self.f1_sentence = HeightInfoSC()
+            # self.f2_sentence = ClothesInfoSC()
         else:
             return 'find_finish'
 
