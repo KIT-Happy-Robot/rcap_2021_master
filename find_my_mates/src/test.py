@@ -3,10 +3,9 @@
 
 import rospy
 import rosparam
-import descsc
-
+from fmmmod import  SexJudgment
 
 if __name__ == '__main__':
-   lisc = LocINfoSC() 
-   result = lisc.nearPoint('human_0')
-   print result
+    # sg = SexJudgment()
+    # result = sg.start()
+    print result

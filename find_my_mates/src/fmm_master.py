@@ -5,13 +5,13 @@ import rospy
 import rosparam
 import smach
 import smach_ros
-# import descsc
+import fmmmod
 
 from happymimi_msgs.srv import SimpleTrg, StrTrg
 from happymimi_navigation.srv import NaviLocation, NaviCoord
-from happymimi_voice_msgs.srv import TTS
+# from happymimi_voice_msgs.srv import TTS
 # speak
-tts_srv = rospy.ServiceProxy('/tts', TTS)
+tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 
 
 class ApproachGuest(smach.State):
@@ -32,7 +32,7 @@ class ApproachGuest(smach.State):
         else:
             pass
         tts_srv("Move to guest")
-        result = self.ap_srv(guest_num)
+        result = self.ap_srv(guest_name)
         if result:
             return 'approach_finish'
         else:
@@ -54,13 +54,15 @@ class FindFuture(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
 
-        self.guest_name = NameInfoSrv()
-        self.guest_loc = LocINfoSrv(num = userdata.g_count_in)
+        # self.guest_name = NameInfoSrv()
+        # self.guest_loc = LocINfo.nearPoint(num = userdata.g_count_in)
         self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         # moduleを作る（サービスのクライアントまとめたやつ）
         if userdata.g_count_in == 0:
             rospy.loginfo("Hello")
             # self.f1_sentence = SexInfoSC()
+            # self.f2_sentence = AgeInfoSC()
+            # self.f1_sentence = SexJudgment.start()
             # self.f2_sentence = AgeInfoSC()
         elif userdata.g_count_in == 1:
             # self.f1_sentence = HeightInfoSC()
