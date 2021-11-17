@@ -23,29 +23,23 @@ class ApproachGuest(smach.State):
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
-        # Param
-        # self.coord_dict = rospy.get_param('/tmp_human_location')
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: APPROACH_GUEST")
-        return 'approach_finish'
         guest_num = userdata.g_count_in
         guest_name = "human_" + str(guest_num)
-        # self.navi_srv('living room')
+        self.navi_srv('living room')
         self.head_pub.publish(10)
         if guest_num == 0:
             self.gen_coord_srv()
-            coord_dict = rospy.get_param('/tmp_human_location')
         else:
             pass
         tts_srv("Move to guest")
-        print guest_name
         result = self.ap_srv(data = guest_name)
+        self.head_pub.publish(0)
         if result:
-            self.head_pub.publish(0)
             return 'approach_finish'
         else:
-            self.head_pub.publish(0)
             return 'approach_finish'
 
 
@@ -71,17 +65,17 @@ class FindFeature(smach.State):
         print self.guest_name
         self.gn_sentence = (self.guest_name + " is near table")
         # moduleを作る（サービスのクライアントまとめたやつ）
+        tts_srv("Excuse me. I have a question for you")
         if userdata.g_count_in == 0:
-            rospy.loginfo("Hello")
-            self.f1_sentence = self.ffv.getSex()
-            self.f2_sentence = self.ffv.getAge()
+            self.f1_sentence = "Gender is " + self.ffv.getSex()
+            self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 1:
             # self.f1_sentence = HeightInfoSC()
             # self.f2_sentence = ClothesInfoSC()
             pass
         else:
             return 'find_finish'
-
+        tts_srv("Thank you for your cooperation")
         userdata.future_out = [self.gn_sentence, self.f1_sentence, self.f2_sentence]
         return 'find_finish'
 
@@ -100,17 +94,15 @@ class TellFeature(smach.State):
         guest_num = userdata.g_count_in
         self.sentence_list = userdata.future_in
         print self.sentence_list
-        if guest_num > 2:
+        if guest_num > 1:
             tts_srv("Finish Find My Mates. Thank you very much")
             return 'all_finish'
         else:
             self.navi_srv('operator')
             pass
+        tts_srv("I'll give you the guest information.")
         for i in range(len(self.sentence_list)):
-            phrase = self.sentence_list[i]
-            print phrase
-            tts_srv(phrase)
-            rospy.sleep(0.1)
+            tts_srv(self.sentence_list[i])
             i += 1
         userdata.g_count_out = guest_num + 1
         return 'tell_finish'

@@ -2,8 +2,7 @@
 # -*- coding: utf-8 -*-
 import rospy
 import rosparam
-from happymimi_msgs.srv import SimpleTrg, StrTrg
-# from happymimi_voice_msgs.srv import TTS, YesNo, GetFeature
+from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr
 from happymimi_voice_msgs.srv import TTS, YesNo, StringToString
 
 # tts_srv
@@ -12,7 +11,7 @@ tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 class FeatureFromVoice():
     def __init__(self):
         # Service
-        # self.feature_srv = rospy.ServiceProxy('get_feature', GetFeature)
+        self.feature_srv = rospy.ServiceProxy('get_feature', StrToStr)
         self.feature_srv = rospy.ServiceProxy('get_feature_srv', StringToString)
         self.yes_no_srv = rospy.ServiceProxy('/yes_no', YesNo)
         # Value
@@ -22,26 +21,19 @@ class FeatureFromVoice():
 
     def getName(self):
         self.name = self.feature_srv(request_data = "name").result_data
-        tts_srv(self.name)
-        # self.name = "Guest name is " + self.name
         return self.name
 
     def getAge(self):
-        # self.age= self.feature_srv(request_data = "age")
         self.age = self.feature_srv(request_data = "old").result_data
-        self.age = "Guest age is " + self.age
         return self.age
 
     def getSex(self):
-        tts_srv("Excuse me. I have a question for you. Please answer with 'yes' or 'no'")
-        tts_srv("Are you a female?")
+        tts_srv("Are you a female? Please answer with 'yes' or 'no'")
         result = self.yes_no_srv()
         if result:
             self.sex= "female"
         else:
             self.sex = "male"
-        tts_srv("Thank you for your cooperation")
-        self.sex = "Guest is " + self.sex
         return self.sex
 
 
