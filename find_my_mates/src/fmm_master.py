@@ -5,7 +5,7 @@ import rospy
 import rosparam
 import smach
 import smach_ros
-import fmmmod
+from fmmmod import FeatureFromVoice, LocINfo
 
 from happymimi_msgs.srv import SimpleTrg, StrTrg
 from happymimi_navigation.srv import NaviLocation, NaviCoord
@@ -54,19 +54,18 @@ class FindFuture(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
 
-        # self.guest_name = NameInfoSrv()
+        self.guest_name = FeatureFromVoice.getName()
         # self.guest_loc = LocINfo.nearPoint(num = userdata.g_count_in)
         self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         # moduleを作る（サービスのクライアントまとめたやつ）
         if userdata.g_count_in == 0:
             rospy.loginfo("Hello")
-            # self.f1_sentence = SexInfoSC()
-            # self.f2_sentence = AgeInfoSC()
-            # self.f1_sentence = SexJudgment.start()
-            # self.f2_sentence = AgeInfoSC()
+            self.f1_sentence = FeatureFromVoice.getSex()
+            self.f2_sentence = FeatureFromVoice.getAge()
         elif userdata.g_count_in == 1:
             # self.f1_sentence = HeightInfoSC()
             # self.f2_sentence = ClothesInfoSC()
+            pass
         else:
             return 'find_finish'
 

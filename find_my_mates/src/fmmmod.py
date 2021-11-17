@@ -1,23 +1,42 @@
 #/usr/bin/env python
 # -*- coding: utf-8 -*-
-
 import rospy
 import rosparam
 from happymimi_msgs.srv import SimpleTrg, StrTrg
-from happymimi_voice_msgs.srv import TTS, YesNo
+from happymimi_voice_msgs.srv import TTS, YesNo, GetFeature
 
 # tts_srv
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 
-
-class NameInfoSC():
+class FeatureFromVoice():
     def __init__(self):
+        # Service
+        self.feature_srv = rospy.ServiceProxy('get_feature', GetFeature)
+        self.yes_no_srv = rospy.ServiceProxy('/yes_no', YesNo)
+        # Value
         self.name = "null"
-        self.name_srv = rospy.ServiceProxy('')
+        self.age  = "null"
+        self.sex  = "null"
 
-    def execute(self):
-        slef.name = self.name_srv()
+    def getName(self):
+        self.name = self.feature_srv(request_data = "name")
         return self.name
+
+    def getAge(self):
+        # self.age= self.feature_srv(request_data = "age")
+        self.age= self.feature_srv(request_data = "old")
+        return self.age
+
+    def getSex(self):
+        tts_srv("Excuse me. I have a question for you. Please answer with 'yes' or 'no'")
+        tts_srv("Are you a female?")
+        result = self.yes_no_srv()
+        if result:
+            self.sex= "female"
+        else:
+            self.sex = "male"
+        tts_srv("Thank you for your cooperation")
+        return self.sex
 
 
 class LocInfo():
@@ -46,21 +65,3 @@ class LocInfo():
                     result = self.loc_name_list[i]
                     stdval = distance
         return result
-
-
-class SexJudgment():
-    def __init__(self):
-        self.yes_no_srv = rospy.ServiceProxy('/yes_no', YesNo)
-        self.sex_resut = "null"
-
-    def start(self):
-        tts_srv('Excuse me')
-        tts_srv("I have a question for you. Please answer with 'yes' or 'no'")
-        tts_srv("Are you a female?")
-        result = self.yes_no_srv()
-        if result:
-            self.sex_resut = "female"
-        else:
-            self.sex_resut = "male"
-        tts_srv("Thank you for your cooperation")
-        return self.sex_resut
