@@ -9,6 +9,10 @@ from std_msgs.msg import Float64
 from happymimi_msgs.srv import SimpleTrg, StrTrg
 from happymimi_navigation.srv import NaviLocation, NaviCoord
 
+file_path = roslib.packages.get_pkg_dir('happymimi_teleop') + '/src/'
+sys.path.insert(0, file_path)
+from base_control import BaseControl
+
 # speak
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 
@@ -23,6 +27,7 @@ class ApproachGuest(smach.State):
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
+        self.bc = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: APPROACH_GUEST")
@@ -31,8 +36,10 @@ class ApproachGuest(smach.State):
         self.navi_srv('living room')
         self.head_pub.publish(10)
         if guest_num == 0:
-            self.gen_coord_srv()
-            pass
+            for i in range(2):
+                rospy.sleep(2.0)
+                self.gen_coord_srv().result:
+                self.bc.rotateAngle(90)
         else:
             pass
         tts_srv("Move to guest")
