@@ -10,7 +10,7 @@ import rospy
 import smach
 import smach_ros
 from std_msgs.msg import String, Float64
-from happymimi_robot.srv import StrTrg
+from happymimi_msgs.srv import StrTrg
 from happymimi_voice_msgs.srv import YesNo
 from happymimi_navigation.srv import NaviLocation
 from happymimi_msgs.srv import StrTrg
@@ -21,7 +21,9 @@ tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 
 class GraspOrPass(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['GOP_finish'],
+        smach.State.__init__(self, outcomes = ['GRASP_finish',
+                                               'PASS_finish',
+                                               'GRASP_failure'],
                                    input_keys = ['GOP_count_in'])
         # Publisher
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
@@ -33,16 +35,19 @@ class GraspOrPass(smach.State):
         if userdata.GOP_count_in == 0:
             self.head_pub.publish(10)
             tts_srv('Please give it to me')
-            result = self.arm_srv('receive').result
-            if result:
-                tts_srv('Thank You')
-                self.arm_srv('carry')
-                self.head_pub.publish(0)
-                return 'GRASP_finish'
-            else:
-                tts_srv("Sorry, I couldn't receive it")
-                tts_srv("Please give it to me again")
-                return 'GRASP_failure'
+            result = self.arm_srv('receive')
+            tts_srv('Thank You')
+            self.arm_srv('carry')
+            return 'GRASP_finish'
+            #if result:
+                #tts_srv('Thank You')
+                #self.arm_srv('carry')
+                #self.head_pub.publish(0)
+                #return 'GRASP_finish'
+            #else:
+                #tts_srv("Sorry, I couldn't receive it")
+                #tts_srv("Please give it to me again")
+                #return 'GRASP_failure'
         else:
             self.head_pub.publish(10)
             tts_srv('Here you are')
@@ -82,8 +87,8 @@ class Chaser(smach.State):
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
-                    userdata.PASS_count_out += 1
-                    return 'chaesr_finish'
+                    userdata.PASS_count_out = pass_count + 1
+                    return 'chaser_finish'
                 else:
                     tts_srv("Ok, continue to follow")
                     tts_srv("Please come in front of me")
