@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-import math
-import rospy
+from scipy.spatial import distance
 import tf
+import rospy
 import rosparam
 from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr
 from happymimi_voice_msgs.srv import TTS, YesNo
@@ -25,6 +25,7 @@ class FeatureFromVoice():
         return result
 
     def getName(self):
+        self.name = "null"
         for i in range(3):
             name_res = self.feature_srv(req_data = "name")
             if name_res.result:
@@ -33,33 +34,34 @@ class FeatureFromVoice():
                 break
             elif i == 3:
                 self.name = "somebody"
+                break
             else:
                 tts_srv("Sorry. I'm going to ask you one more time.")
-                # i += 1
         return self.name
 
     def getAge(self):
+        self.age = "null"
         for i in range(3):
             age_res = self.feature_srv(req_data = "old")
-            if age_res.result:
+            if i == 3:
+                self.age + "unknown"
+                break
+            elif age_res.result:
                 self.age = age_res.res_data
                 tts_srv("Your age is" + self.age)
-                tts_srv("Is this OK? Please answer 'yes or 'no")
+                tts_srv("Is this OK? Please answer yes or no")
                 if self.yesNo():
                     break
                 else:
                     tts_srv("Sorry. I'm going to ask you one more time.")
-                    # i += 1
-            elif i == 3:
-                self.age = "unknown"
             else:
                 tts_srv("Sorry. I'm going to ask you one more time.")
-                # i += 1
         return self.age
 
     def getSex(self):
-        tts_srv("Are you a female? Please answer with 'yes' or 'no'")
-        result = self.yes_no_srv()
+        self.sex = "null"
+        tts_srv("Are you a female? Please answer with yes or no")
+        result = self.yes_no_srv().result
         if result:
             self.sex= "female"
         else:
@@ -75,28 +77,23 @@ class LocInfo():
         self.loc_name_list = list(self.loc_dict.keys())
         self.loc_name      = "null"
 
-    def quat_to_rpy(self, q):
-        rpy = tf.transformations.euler_from_quaternion((q[0], q[1], q[2], q[3]))
-        rpy = [round(rpy[0], 3), round(rpy[1], 3), round(rpy[2], 3)]
-        return rpy
-
     # 複数の座標のうちx, yに一番近い座標の名前を求める
     def nearPoint(self, target_name):
         self.loc_name = "null"
         self.human_dict = rospy.get_param('/tmp_human_location')
-        h_rpy = self.quat_to_rpy(self.human_dict[target_name])
-        human_x = h_rpy[0]
-        human_y = h_rpy[1]
+        h_rpy = self.human_dict[target_name]
+        h_xy = (h_rpy[0], h_rpy[1])
         for i in range(len(self.loc_name_list)):
             self.loc_name = self.loc_name_list[i]
-            loc_rpy = self.quat_to_rpy(self.loc_dict[self.loc_name])
-            loc_x = loc_rpy[0]
-            loc_y = loc_rpy[1]
+            loc_rpy = self.loc_dict[self.loc_name]
+            l_xy = (loc_rpy[0], loc_rpy[1])
             if i == 0:
-                stdval = math.sqrt((loc_x - human_x) ** 2 + (loc_y - human_y) ** 2)
-            distance = math.sqrt((loc_x - human_x) ** 2 + (loc_y - human_y) ** 2)
-            elif stdval > distance:
-                    stdval = distance
-                    loc_result = self.loc_name
+                stdval = distance.euclidean(h_xy, l_xy)
+            dist = distance.euclidean(h_xy, l_xy)
+            print self.loc_name
+            print dist
+            if stdval > dist:
+                stdval = dist
+                loc_result = self.loc_name
         print loc_result
         return loc_result

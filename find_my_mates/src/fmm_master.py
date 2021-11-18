@@ -28,17 +28,16 @@ class ApproachGuest(smach.State):
         rospy.loginfo("Executing state: APPROACH_GUEST")
         guest_num = userdata.g_count_in
         guest_name = "human_" + str(guest_num)
-        self.navi_srv('living room')
-        self.head_pub.publish(10)
+        tts_srv("Move to guest")
         if guest_num == 0:
+            self.navi_srv('living room')
+            self.head_pub.publish(10)
+            rospy.sleep(2.0)
             self.gen_coord_srv()
-            pass
         else:
             pass
-        tts_srv("Move to guest")
         result = self.ap_srv(data = guest_name)
         self.head_pub.publish(0)
-        result = True
         if result:
             return 'approach_finish'
         else:
@@ -50,6 +49,8 @@ class FindFeature(smach.State):
         smach.State.__init__(self, outcomes = ['find_finish'],
                              input_keys = ['g_count_in'],
                              output_keys = ['future_out'])
+        # Topic
+        self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         self.li = LocInfo()
         self.ffv = FeatureFromVoice()
         self.guest_name  = "null"
@@ -61,6 +62,7 @@ class FindFeature(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
+        self.head_pub.publish(-20)
         tts_srv("Excuse me. I have a question for you")
         self.guest_name = self.ffv.getName()
         print self.guest_name
@@ -90,6 +92,8 @@ class TellFeature(smach.State):
                              output_keys = ['g_count_out'])
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
+        # Topic
+        self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Value
         self.sentence_list = []
 
@@ -97,7 +101,9 @@ class TellFeature(smach.State):
         rospy.loginfo("Executing state: TELL_FUATURE")
         guest_num = userdata.g_count_in
         self.sentence_list = userdata.future_in
-        navi_result = self.navi_srv('operator')
+        tts_srv("Move to operator")
+        navi_result = self.navi_srv('operator').result
+        self.head_pub.publish(-20)
         if navi_result:
             tts_srv("I'll give you the guest information.")
         else:
