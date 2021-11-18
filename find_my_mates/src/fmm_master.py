@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+import sys
 import rospy
 import rosparam
+import roslib
 import smach
 import smach_ros
 from fmmmod import FeatureFromVoice, LocInfo
@@ -35,17 +37,14 @@ class ApproachGuest(smach.State):
         guest_name = "human_" + str(guest_num)
         tts_srv("Move to guest")
         if guest_num == 0:
-<<<<<<< HEAD
             self.navi_srv('living room')
             self.head_pub.publish(10)
-            rospy.sleep(2.0)
+            self.bc.rotateAngle(-20)
             self.gen_coord_srv()
-=======
-            for i in range(2):
-                rospy.sleep(2.0)
-                self.gen_coord_srv().result:
-                self.bc.rotateAngle(90)
->>>>>>> de6858db6ada8e795de4b1d2f00b06e10d80129e
+            # for i in range(2):
+                # rospy.sleep(2.0)
+                # self.gen_coord_srv()
+                # self.bc.rotateAngle(-90)
         else:
             pass
         result = self.ap_srv(data = guest_name)
