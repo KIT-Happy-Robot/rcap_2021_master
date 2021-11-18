@@ -31,18 +31,23 @@ class GraspOrPass(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: GRASP_OR_PASS')
         if userdata.GOP_count_in == 0:
+            self.head_pub.publish(10)
             tts_srv('Please give it to me')
             result = self.arm_srv('receive').result
             if result:
                 tts_srv('Thank You')
+                self.arm_srv('carry')
+                self.head_pub.publish(0)
                 return 'GRASP_finish'
             else:
                 tts_srv("Sorry, I couldn't receive it")
                 tts_srv("Please give it to me again")
+                return 'GRASP_failure'
         else:
-            self.head_pub.publish(-15)
+            self.head_pub.publish(10)
             tts_srv('Here you are')
             self.arm_srv('give')
+            self.head_pub.publish(0)
             return 'PASS_finish'
 
 
@@ -110,7 +115,8 @@ if __name__=='__main__':
                 'GRASP_OR_PASS',
                 GraspOrPass(),
                 transitions = {'GRASP_finish':'CHASER',
-                               'PASS_finish':'RETURN'},
+                               'PASS_finish':'RETURN',
+                               'GRASP_failure':'GRASP_OR_PASS'},
                 remapping = {'GOP_count_in':'GOP_count'})
 
         smach.StateMachine.add(
