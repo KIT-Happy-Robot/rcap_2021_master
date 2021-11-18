@@ -19,12 +19,34 @@ class FeatureFromVoice():
         self.age  = "null"
         self.sex  = "null"
 
+    def yesNo(self):
+        result = self.yes_no_srv().result
+        return result
+
     def getName(self):
-        self.name = self.feature_srv(req_data = "name").res_data
+        for i in range(3):
+            name_res = self.feature_srv(req_data = "name")
+            if name_res.result:
+                self.name = name_res.res_data
+                tts_srv("Hi " + self.name)
+            elif i == 3:
+                self.name = "somebody" 
+            else:
+                tts_srv("Sorry. I'm going to ask you one more time.")
+                i += 1
         return self.name
 
     def getAge(self):
-        self.age = self.feature_srv(req_data = "old").res_data
+        for i in range(3):
+            age_res = self.feature_srv(req_data = "old")
+            if age_res.result:
+                self.age = age_res.res_data
+                tts_srv(self.age)
+            elif i == 3:
+                self.age = "unknown"
+            else:
+                tts_srv("Sorry. I'm going to ask you one more time.")
+                i += 1
         return self.age
 
     def getSex(self):

@@ -61,7 +61,6 @@ class FindFeature(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
-
         tts_srv("Excuse me. I have a question for you")
         self.guest_name = self.ffv.getName()
         # self.guest_loc = self.locinfo.nearPoint("human_" + str(userdata.g_count_in))
@@ -84,25 +83,24 @@ class FindFeature(smach.State):
 
 class TellFeature(smach.State):
     def __init__(self):
-        smach.State.__init__(self, outcomes = ['tell_finish', 'all_finish'],
+        smach.State.__init__(self, outcomes = ['tell_finish'],
                              input_keys = ['g_count_in', 'future_in'],
                              output_keys = ['g_count_out'])
-        self.sentence_list = []
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
+        # Value
+        self.sentence_list = []
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: TELL_FUATURE")
         guest_num = userdata.g_count_in
         self.sentence_list = userdata.future_in
-        print self.sentence_list
-        if guest_num > 1:
-            tts_srv("Finish Find My Mates. Thank you very much")
-            return 'all_finish'
+        navi_result = self.navi_srv('operator')
+        if navi_result:
+            tts_srv("I'll give you the guest information.")
         else:
-            self.navi_srv('operator')
-            pass
-        tts_srv("I'll give you the guest information.")
+            tts_srv("I'm sorry. I couldn't navigate to the operator's location. I will provide the features from here.")
+        print self.sentence_list
         for i in range(len(self.sentence_list)):
             tts_srv(self.sentence_list[i])
             i += 1
@@ -110,13 +108,38 @@ class TellFeature(smach.State):
         return 'tell_finish'
 
 
+class Operation(smach.State):
+    def __init__(self):
+        smach.State.__init__(self, outcomes = ['start_test', 'all_finish'],
+                             input_keys = ['g_count_in'])
+
+    def execute(self, userdata):
+        rospy.loginfo("Executing state: OPERATION")
+        guest_count = userdata.g_count_in
+        if guest_count == 0:
+            tts_srv("Start Find My Mates")
+            return 'start_test'
+        elif guest_count > 1:
+            tts_srv("Finish Find My Mates. Thank you very much")
+            return 'all_finish'
+        else:
+            return 'start_test'
+
+
 if __name__ == '__main__':
     rospy.init_node('fmm_master')
     rospy.loginfo("Start Find My Mates")
-    tts_srv("Start Find My Mates")
+    # tts_srv("Start Find My Mates")
     sm_top = smach.StateMachine(outcomes = ['finish_sm_top'])
     sm_top.userdata.guest_count = 0
     with sm_top:
+        smach.StateMachine.add(
+                'OPERATION',
+                Operation(),
+                transitions = {'start_test':'APPROACH_GUEST',
+                               'all_finish':'finish_sm_top'},
+                remapping = {'g_count_in':'guest_count'})
+
         smach.StateMachine.add(
                 'APPROACH_GUEST',
                 ApproachGuest(),
@@ -133,8 +156,7 @@ if __name__ == '__main__':
         smach.StateMachine.add(
                 'TELL_FEATURE',
                 TellFeature(),
-                transitions = {'tell_finish':'APPROACH_GUEST',
-                               'all_finish':'finish_sm_top'},
+                transitions = {'tell_finish':'OPERATION'},
                 remapping = {'future_in':'guest_future',
                              'g_count_in':'guest_count',
                              'g_count_out':'guest_count'})
