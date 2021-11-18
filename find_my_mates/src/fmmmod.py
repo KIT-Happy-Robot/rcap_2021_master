@@ -3,7 +3,7 @@
 import rospy
 import rosparam
 from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr
-from happymimi_voice_msgs.srv import TTS, YesNo, StringToString
+from happymimi_voice_msgs.srv import TTS, YesNo
 
 # tts_srv
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
@@ -11,8 +11,8 @@ tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 class FeatureFromVoice():
     def __init__(self):
         # Service
-        self.feature_srv = rospy.ServiceProxy('get_feature', StrToStr)
-        self.feature_srv = rospy.ServiceProxy('get_feature_srv', StringToString)
+        self.feature_srv = rospy.ServiceProxy('get_feature_srv', StrToStr)
+        # self.feature_srv = rospy.ServiceProxy('get_feature_srv', StringToString)
         self.yes_no_srv = rospy.ServiceProxy('/yes_no', YesNo)
         # Value
         self.name = "null"
@@ -20,11 +20,11 @@ class FeatureFromVoice():
         self.sex  = "null"
 
     def getName(self):
-        self.name = self.feature_srv(request_data = "name").result_data
+        self.name = self.feature_srv(req_data = "name").res_data
         return self.name
 
     def getAge(self):
-        self.age = self.feature_srv(request_data = "old").result_data
+        self.age = self.feature_srv(req_data = "old").res_data
         return self.age
 
     def getSex(self):
@@ -38,7 +38,7 @@ class FeatureFromVoice():
 
 
 class LocInfo():
-    def __init__(self, arg):
+    def __init__(self):
         self.loc = "null"
         self.human_dict = rospy.get_param('/tmp_human_location')
         self.loc_dict = rospy.get_param('/location_dict')

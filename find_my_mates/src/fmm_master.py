@@ -32,11 +32,13 @@ class ApproachGuest(smach.State):
         self.head_pub.publish(10)
         if guest_num == 0:
             self.gen_coord_srv()
+            pass
         else:
             pass
         tts_srv("Move to guest")
         result = self.ap_srv(data = guest_name)
         self.head_pub.publish(0)
+        result = True
         if result:
             return 'approach_finish'
         else:
@@ -48,6 +50,7 @@ class FindFeature(smach.State):
         smach.State.__init__(self, outcomes = ['find_finish'],
                              input_keys = ['g_count_in'],
                              output_keys = ['future_out'])
+        self.locinfo = LocInfo()
         self.ffv = FeatureFromVoice()
         self.guest_name  = "null"
         self.guest_loc   = "null"
@@ -59,13 +62,12 @@ class FindFeature(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
 
+        tts_srv("Excuse me. I have a question for you")
         self.guest_name = self.ffv.getName()
-        # self.guest_loc = LocINfo.nearPoint(num = userdata.g_count_in)
+        # self.guest_loc = self.locinfo.nearPoint("human_" + str(userdata.g_count_in))
         # self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         print self.guest_name
         self.gn_sentence = (self.guest_name + " is near table")
-        # moduleを作る（サービスのクライアントまとめたやつ）
-        tts_srv("Excuse me. I have a question for you")
         if userdata.g_count_in == 0:
             self.f1_sentence = "Gender is " + self.ffv.getSex()
             self.f2_sentence = "Age is " + self.ffv.getAge()
