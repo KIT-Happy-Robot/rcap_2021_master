@@ -50,7 +50,7 @@ class FindFeature(smach.State):
         smach.State.__init__(self, outcomes = ['find_finish'],
                              input_keys = ['g_count_in'],
                              output_keys = ['future_out'])
-        self.locinfo = LocInfo()
+        self.li = LocInfo()
         self.ffv = FeatureFromVoice()
         self.guest_name  = "null"
         self.guest_loc   = "null"
@@ -63,16 +63,18 @@ class FindFeature(smach.State):
         rospy.loginfo("Executing state: FIND_FUATURE")
         tts_srv("Excuse me. I have a question for you")
         self.guest_name = self.ffv.getName()
-        # self.guest_loc = self.locinfo.nearPoint("human_" + str(userdata.g_count_in))
-        # self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         print self.guest_name
-        self.gn_sentence = (self.guest_name + " is near table")
+        self.guest_loc = self.li.nearPoint("human_" + str(userdata.g_count_in))
+        self.gn_sentence = self.guest_name + " is near " + self.guest_loc
+        # self.gn_sentence = (self.guest_name + " is near table")
         if userdata.g_count_in == 0:
             self.f1_sentence = "Gender is " + self.ffv.getSex()
             self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 1:
             # self.f1_sentence = HeightInfoSC()
             # self.f2_sentence = ClothesInfoSC()
+            self.f1_sentence = "Gender is " + self.ffv.getSex()
+            self.f2_sentence = "Age is " + self.ffv.getAge()
             pass
         else:
             return 'find_finish'
