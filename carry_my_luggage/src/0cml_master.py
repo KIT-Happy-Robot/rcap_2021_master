@@ -11,7 +11,6 @@ import time
 import smach
 import smach_ros
 from std_msgs.msg import String
-#from std_msgs.msg import Bool
 from happymimi_robot.srv import StrTrg
 from happymimi_voice_msgs.srv import YesNo
 from happymimi_navigation.srv import NaviLocation
@@ -81,6 +80,7 @@ class Chaser(smach.State):
         self.yesno_srv = rospy.ServiceProxy('/yes_no', YesNo)
         # Value
         self.find_msg = False
+        self.start_time = time.time()
 
     def findCB(self, receive_msg):
         self.find_msg = receive_msg.data
@@ -89,7 +89,8 @@ class Chaser(smach.State):
         self.chaser_pub.publish('start')
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
-            if self.find_msg == "lost":
+            now_time = time.time() - self.start_time
+            if self.find_msg == "lost" and now_time >= 5:
                 tts_srv("I lost sight of you")
                 tts_srv("Is this the location of the car?")
                 answer = self.yesno_srv().result
@@ -99,6 +100,8 @@ class Chaser(smach.State):
                     tts_srv("Ok, continue to follow")
                     tts_srv("Please come in front of me")
                     self.find_msg = "NULL"
+            elif self.find_msg == "lost":
+                self.start_time = time.time()
             else:
                 pass
 

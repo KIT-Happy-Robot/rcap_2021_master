@@ -7,14 +7,18 @@
 # Memo:
 #----------------------------------------------------
 import rospy
+import roslib
 import time
 import smach
 import smach_ros
 from std_msgs.msg import String, Float64
+from geometry_msgs.msg import Twist
 from happymimi_msgs.srv import StrTrg
 from happymimi_voice_msgs.srv import YesNo
 from happymimi_navigation.srv import NaviLocation
 from happymimi_msgs.srv import StrTrg
+base_path = roslib.packages.get_pkg_dir('happymimi_teleop') + '/src/'
+from base_control import BaseControl
 
 # tts_srv
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
@@ -67,31 +71,61 @@ class Chaser(smach.State):
         self.chaser_pub = rospy.Publisher('/follow_human', String, queue_size = 1)
         # Subscriber
         rospy.Subscriber('/find_str', String, self.findCB)
+        rospy.Subscriber('/cmd_vel', String, self.cmdCB)
         # ServiceProxy
         self.yesno_srv = rospy.ServiceProxy('/yes_no', YesNo)
+        # Module
+        self.base_control = BaseControl()
         # Value
-        self.find_msg = False
+        self.start_time = time.time()
+        self.find_msg = 'NULL'
+        self.cmd_sub = 0.0
 
     def findCB(self, receive_msg):
         self.find_msg = receive_msg.data
 
+    def cmdCB(self, receive_msg):
+        self.cmd_sub = receive_msg.linear.x
+
     def execute(self, userdata):
         rospy.loginfo('Executing state: CHASER')
         pass_count = userdata.PASS_count_in
-        tts_srv("I'll follow you. Please come in front of me. Please come in front of me")
+        tts_srv("I'll follow you. Please come in front of me.")
         self.chaser_pub.publish('start')
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
-            if self.find_msg == "lost":
-                tts_srv("I lost sight of you. Is this the location of the car?")
+            now_time = time.time() - self.start_time
+            if self.cmd_sub == 0.0 and self.find_msg == 'NULL':
+                self.start_time = time.time()
+            elif self.cmd_sub == 0.0 and now_time >= 3.0 and self.find_msg == 'NULL':
+                tts_srv("Is this the location of the car?")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
+                    self.base_control(0, 0)
+                    userdata.PASS_count_out = pass_count + 1
+                    return 'chaser_finish'
+                else:
+                    tts_srv("Ok, continue to follow. Please come in front of me.")
+            elif self.find_msg == "lost":
+                self.start_time = time.time()
+                self.lost_msg = 'lost_after'
+            elif self.lost_msg == "lost_after" and now_time >= 3:
+                tts_srv("I lost sight of you. Please come in front of me.")
+            elif self.lost_msg == "lost_after" and now_time >= 8:
+                tts_srv("Is this the location of the car?")
+                answer = self.yesno_srv().result
+                if answer:
+                    self.chaser_pub.publish('stop')
+                    self.base_control(0, 0)
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
                     tts_srv("Ok, continue to follow. Please come in front of me.")
                     self.find_msg = "NULL"
+
+            elif self.cmd_sub != 0.0:
+                self.find_msg = 'NULL'
             else:
                 pass
 
