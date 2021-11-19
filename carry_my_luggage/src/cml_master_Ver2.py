@@ -78,8 +78,7 @@ class Chaser(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: CHASER')
         pass_count = userdata.PASS_count_in
-        tts_srv("I'll follow you")
-        tts_srv("Please come in front of me")
+        tts_srv("I'll follow you. Please come in front of me. Please come in front of me")
         self.chaser_pub.publish('start')
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
