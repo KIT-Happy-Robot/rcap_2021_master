@@ -7,6 +7,7 @@
 # Memo:
 #----------------------------------------------------
 import rospy
+import time
 import smach
 import smach_ros
 from std_msgs.msg import String, Float64
@@ -53,6 +54,7 @@ class GraspOrPass(smach.State):
             tts_srv('Here you are')
             self.arm_srv('give')
             self.head_pub.publish(0)
+            tts_srv('Return to start position')
             return 'PASS_finish'
 
 
@@ -82,16 +84,14 @@ class Chaser(smach.State):
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
             if self.find_msg == "lost":
-                tts_srv("I lost sight of you")
-                tts_srv("Is this the location of the car?")
+                tts_srv("I lost sight of you. Is this the location of the car?")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
-                    tts_srv("Ok, continue to follow")
-                    tts_srv("Please come in front of me")
+                    tts_srv("Ok, continue to follow. Please come in front of me.")
                     self.find_msg = "NULL"
             else:
                 pass
@@ -107,12 +107,15 @@ class Return(smach.State):
         rospy.loginfo('Executing state: RETURN')
         rospy.sleep(0.5)
         self.navi_srv('operator')
+        rospy.sleep(0.5)
+        tts_srv("Finish Carry My Luggage. Thank you very much")
         return 'return_finish'
 
 
 if __name__=='__main__':
     rospy.init_node('cml_master')
     rospy.loginfo("Start Carry My Luggage")
+    tts_srv("Start Carry My Luggage")
     sm_top = smach.StateMachine(outcomes = ['finish_sm_top'])
     sm_top.userdata.GOP_count = 0
     with sm_top:

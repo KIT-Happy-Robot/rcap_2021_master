@@ -4,11 +4,13 @@ from scipy.spatial import distance
 import tf
 import rospy
 import rosparam
-from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr
+from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr, SetFloat, SetStr
 from happymimi_voice_msgs.srv import TTS, YesNo
 
 # tts_srv
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
+# wave_play
+wave_srv = rospy.ServiceProxy('/waveplay_srv', StrTrg)
 
 class FeatureFromVoice():
     def __init__(self):
@@ -32,11 +34,10 @@ class FeatureFromVoice():
                 self.name = name_res.res_data
                 tts_srv("Hi " + self.name)
                 break
-            elif i == 3:
-                self.name = "somebody"
-                break
             else:
                 tts_srv("Sorry. I'm going to ask you one more time.")
+                self.name = "somebody"
+                # wave_srv("/fmm/ask_again")
         return self.name
 
     def getAge(self):
@@ -50,17 +51,21 @@ class FeatureFromVoice():
                 self.age = age_res.res_data
                 tts_srv("Your age is" + self.age)
                 tts_srv("Is this OK? Please answer yes or no")
+                # wave_srv("/fmm/answer_yn")
                 if self.yesNo():
                     break
                 else:
                     tts_srv("Sorry. I'm going to ask you one more time.")
+                    # wave_srv("/fmm/ask_again")
             else:
                 tts_srv("Sorry. I'm going to ask you one more time.")
+                # wave_srv("/fmm/ask_again")
         return self.age
 
     def getSex(self):
         self.sex = "null"
         tts_srv("Are you a female? Please answer with yes or no")
+        # wave_srv("/fmm/sex_q")
         result = self.yes_no_srv().result
         if result:
             self.sex= "female"
@@ -69,6 +74,31 @@ class FeatureFromVoice():
         tts_srv("You are " + self.sex)
         return self.sex
 
+class FeatureFromRecog():
+    def __init__(self):
+        # Service
+        self.height_srv = rospy.ServiceProxy('/person_feature/height', SetFloat)
+        self.cloth_srv  = rospy.ServiceProxy('/person_feature/cloth_color', SetStr)
+        # Value
+        self.height      = "null"
+        self.cloth_color = "null"
+
+    def getHeight(self):
+        height = 0.00
+        height = self.height().data
+        if height == -1:
+            return False
+        else:
+            self.height = str(height)
+            return self.height
+
+    def getClothColor(self):
+        self.cloth_color = "null"
+        self.cloth_color = self.cloth_srv().result
+        if self.cloth_color == '':
+            return False
+        else:
+            return self.cloth_color
 
 class LocInfo():
     def __init__(self):
