@@ -9,6 +9,7 @@
 import rospy
 import roslib
 import time
+import sys
 import smach
 import smach_ros
 from std_msgs.msg import String, Float64
@@ -18,11 +19,12 @@ from happymimi_voice_msgs.srv import YesNo
 from happymimi_navigation.srv import NaviLocation
 from happymimi_msgs.srv import StrTrg
 base_path = roslib.packages.get_pkg_dir('happymimi_teleop') + '/src/'
+sys.path.insert(0, base_path)
 from base_control import BaseControl
 
 # tts_srv
-tts_srv = rospy.ServiceProxy('/tts', StrTrg)
-
+#tts_srv = rospy.ServiceProxy('/tts', StrTrg)
+tts_srv = rospy.ServiceProxy('/waveplay_srv', StrTrg)
 
 class GraspOrPass(smach.State):
     def __init__(self):
@@ -39,9 +41,9 @@ class GraspOrPass(smach.State):
         rospy.loginfo('Executing state: GRASP_OR_PASS')
         if userdata.GOP_count_in == 0:
             self.head_pub.publish(10)
-            tts_srv('Please give it to me')
+            tts_srv('/cml/pass_mimi')
             result = self.arm_srv('receive')
-            tts_srv('Thank You')
+            tts_srv('/cml/pass_thank')
             self.arm_srv('carry')
             return 'GRASP_finish'
             #if result:
@@ -55,10 +57,10 @@ class GraspOrPass(smach.State):
                 #return 'GRASP_failure'
         else:
             self.head_pub.publish(10)
-            tts_srv('Here you are')
+            tts_srv('/cml/give_bag')
             self.arm_srv('give')
             self.head_pub.publish(0)
-            tts_srv('Return to start position')
+            tts_srv('/cml/return_start')
             return 'PASS_finish'
 
 
@@ -71,7 +73,7 @@ class Chaser(smach.State):
         self.chaser_pub = rospy.Publisher('/follow_human', String, queue_size = 1)
         # Subscriber
         rospy.Subscriber('/find_str', String, self.findCB)
-        rospy.Subscriber('/cmd_vel', String, self.cmdCB)
+        rospy.Subscriber('/cmd_vel', Twist, self.cmdCB)
         # ServiceProxy
         self.yesno_srv = rospy.ServiceProxy('/yes_no', YesNo)
         # Module
@@ -90,7 +92,7 @@ class Chaser(smach.State):
     def execute(self, userdata):
         rospy.loginfo('Executing state: CHASER')
         pass_count = userdata.PASS_count_in
-        tts_srv("I'll follow you. Please come in front of me.")
+        tts_srv("/cml/follow_you")
         self.chaser_pub.publish('start')
         while not rospy.is_shutdown():
             rospy.sleep(0.1)
@@ -98,31 +100,32 @@ class Chaser(smach.State):
             if self.cmd_sub == 0.0 and self.find_msg == 'NULL':
                 self.find_msg = 'lost_stop'
                 self.start_time = time.time()
-            elif self.cmd_sub == 0.0 and now_time >= 3.0 and self.find_msg == 'lost_stop':
-                tts_srv("Is this the location of the car?")
+            elif self.cmd_sub == 0.0 and now_time >= 5.0 and self.find_msg == 'lost_stop':
+                tts_srv("/cml/car_question")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
-                    self.base_control(0, 0)
+                    self.base_control.rotateAngle(0, 0)
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
-                    tts_srv("Ok, continue to follow. Please come in front of me.")
+                    tts_srv("cml/follow_cont")
             elif self.find_msg == "lost":
                 self.start_time = time.time()
-                self.lost_msg = 'lost_after'
-            elif self.lost_msg == "lost_after" and now_time >= 3:
-                tts_srv("I lost sight of you. Please come in front of me.")
-            elif self.lost_msg == "lost_after" and now_time >= 8:
-                tts_srv("Is this the location of the car?")
+                self.find_msg = 'lost_after'
+            elif self.find_msg == "lost_after" and now_time >= 3.0:
+                tts_srv("/cml/follow_lost")
+                self.find_msg = "lost_long"
+            elif self.find_msg == "lost_long" and now_time >= 13.0:
+                tts_srv("/cml/car_question")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
-                    self.base_control(0, 0)
+                    self.base_control.rotateAngle(0, 0)
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
-                    tts_srv("Ok, continue to follow. Please come in front of me.")
+                    tts_srv("/cml/follow_cont")
                     self.find_msg = "NULL"
 
             elif self.cmd_sub != 0.0:
@@ -142,14 +145,14 @@ class Return(smach.State):
         rospy.sleep(0.5)
         self.navi_srv('operator')
         rospy.sleep(0.5)
-        tts_srv("Finish Carry My Luggage. Thank you very much")
+        tts_srv("/cml/finish_cml")
         return 'return_finish'
 
 
 if __name__=='__main__':
     rospy.init_node('cml_master')
     rospy.loginfo("Start Carry My Luggage")
-    tts_srv("Start Carry My Luggage")
+    tts_srv("/cml/start_cml")
     sm_top = smach.StateMachine(outcomes = ['finish_sm_top'])
     sm_top.userdata.GOP_count = 0
     with sm_top:
