@@ -96,8 +96,9 @@ class Chaser(smach.State):
             rospy.sleep(0.1)
             now_time = time.time() - self.start_time
             if self.cmd_sub == 0.0 and self.find_msg == 'NULL':
+                self.find_msg = 'lost_stop'
                 self.start_time = time.time()
-            elif self.cmd_sub == 0.0 and now_time >= 3.0 and self.find_msg == 'NULL':
+            elif self.cmd_sub == 0.0 and now_time >= 3.0 and self.find_msg == 'lost_stop':
                 tts_srv("Is this the location of the car?")
                 answer = self.yesno_srv().result
                 if answer:
