@@ -18,7 +18,7 @@ from base_control import BaseControl
 # speak
 tts_srv = rospy.ServiceProxy('/tts', StrTrg)
 # wave_play
-# wave_srv = rospy.ServiceProxy('/waveplay_srv', StrTrg)
+wave_srv = rospy.ServiceProxy('/waveplay_srv', StrTrg)
 
 class ApproachGuest(smach.State):
     def __init__(self):
@@ -37,10 +37,10 @@ class ApproachGuest(smach.State):
         guest_num = userdata.g_count_in
         guest_name = "human_" + str(guest_num)
         tts_srv("Move to guest")
+        wave_srv("/fmm/move_guest")
+        rospy.sleep(0.5)
         self.navi_srv('living room')
-        # wave_srv("/fmm/move_guest")
         if guest_num == 0:
-            # self.navi_srv('living room')
             self.head_pub.publish(10)
             result = self.gen_coord_srv().result
             # self.bc.rotateAngle(-10)
@@ -80,8 +80,8 @@ class FindFeature(smach.State):
     def execute(self, userdata):
         rospy.loginfo("Executing state: FIND_FUATURE")
         self.head_pub.publish(-20)
-        tts_srv("Excuse me. I have a question for you")
-        # wave_srv("/fmm/start_q")
+        # tts_srv("Excuse me. I have a question for you")
+        wave_srv("/fmm/start_q")
         self.guest_name = self.ffv.getName()
         print self.guest_name
         self.guest_loc = self.li.nearPoint("human_" + str(userdata.g_count_in))
@@ -92,14 +92,14 @@ class FindFeature(smach.State):
             self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 1:
             self.f1_sentence = FeatureFromRecog.getHeight()
-            # self.f2_sentence = FeatureFromRecog.getClothColor()
+            self.f2_sentence = FeatureFromRecog.getClothColor()
             # self.f1_sentence = "Gender is " + self.ffv.getSex()
-            self.f2_sentence = "Age is " + self.ffv.getAge()
+            # self.f2_sentence = "Age is " + self.ffv.getAge()
             pass
         else:
             return 'find_finish'
-        tts_srv("Thank you for your cooperation")
-        # wave_srv("/fmm/finsh_q")
+        # tts_srv("Thank you for your cooperation")
+        wave_srv("/fmm/finsh_q")
         userdata.future_out = [self.gn_sentence, self.f1_sentence, self.f2_sentence]
         return 'find_finish'
 
@@ -120,16 +120,17 @@ class TellFeature(smach.State):
         rospy.loginfo("Executing state: TELL_FUATURE")
         guest_num = userdata.g_count_in
         self.sentence_list = userdata.future_in
-        tts_srv("Move to operator")
-        # wave_srv("/fmm/move_operator")
+        # tts_srv("Move to operator")
+        wave_srv("/fmm/move_operator")
+        rospy.sleep(0.5)
         navi_result = self.navi_srv('operator').result
         self.head_pub.publish(-20)
         if navi_result:
-            tts_srv("I'll give you the guest information.")
-            # wave_srv("/fmm/start_req")
+            # tts_srv("I'll give you the guest information.")
+            wave_srv("/fmm/start_req")
         else:
-            tts_srv("I'm sorry. I couldn't navigate to the operator's location. I will provide the features from here.")
-            # wave_srv("/fmm/start_req_here")
+            # tts_srv("I'm sorry. I couldn't navigate to the operator's location. I will provide the features from here.")
+            wave_srv("/fmm/start_req_here")
         print self.sentence_list
         for i in range(len(self.sentence_list)):
             tts_srv(self.sentence_list[i])
@@ -147,12 +148,12 @@ class Operation(smach.State):
         rospy.loginfo("Executing state: OPERATION")
         guest_count = userdata.g_count_in
         if guest_count == 0:
-            tts_srv("Start Find My Mates")
-            # wave_srv("/fmm/start_fmm")
+            # tts_srv("Start Find My Mates")
+            wave_srv("/fmm/start_fmm")
             return 'start_test'
         elif guest_count > 1:
-            tts_srv("Finish Find My Mates. Thank you very much")
-            # wave_srv("/fmm/finish_fmm")
+            # tts_srv("Finish Find My Mates. Thank you very much")
+            wave_srv("/fmm/finish_fmm")
             return 'all_finish'
         else:
             return 'start_test'

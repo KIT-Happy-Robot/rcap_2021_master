@@ -35,9 +35,9 @@ class FeatureFromVoice():
                 tts_srv("Hi " + self.name)
                 break
             else:
-                tts_srv("Sorry. I'm going to ask you one more time.")
+                # tts_srv("Sorry. I'm going to ask you one more time.")
+                wave_srv("/fmm/ask_again")
                 self.name = "somebody"
-                # wave_srv("/fmm/ask_again")
         return self.name
 
     def getAge(self):
@@ -50,22 +50,22 @@ class FeatureFromVoice():
             elif age_res.result:
                 self.age = age_res.res_data
                 tts_srv("Your age is" + self.age)
-                tts_srv("Is this OK? Please answer yes or no")
-                # wave_srv("/fmm/answer_yn")
+                # tts_srv("Is this OK? Please answer yes or no")
+                wave_srv("/fmm/answer_yn")
                 if self.yesNo():
                     break
                 else:
-                    tts_srv("Sorry. I'm going to ask you one more time.")
-                    # wave_srv("/fmm/ask_again")
+                    # tts_srv("Sorry. I'm going to ask you one more time.")
+                    wave_srv("/fmm/ask_again")
             else:
-                tts_srv("Sorry. I'm going to ask you one more time.")
-                # wave_srv("/fmm/ask_again")
+                # tts_srv("Sorry. I'm going to ask you one more time.")
+                wave_srv("/fmm/ask_again")
         return self.age
 
     def getSex(self):
         self.sex = "null"
-        tts_srv("Are you a female? Please answer with yes or no")
-        # wave_srv("/fmm/sex_q")
+        # tts_srv("Are you a female? Please answer with yes or no")
+        wave_srv("/fmm/sex_q")
         result = self.yes_no_srv().result
         if result:
             self.sex= "female"
