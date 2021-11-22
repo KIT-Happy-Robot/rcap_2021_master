@@ -35,9 +35,9 @@ class FeatureFromVoice():
                 tts_srv("Hi " + self.name)
                 break
             else:
-                tts_srv("Sorry. I'm going to ask you one more time.")
+                # tts_srv("Sorry. I'm going to ask you one more time.")
+                wave_srv("/fmm/ask_again")
                 self.name = "somebody"
-                # wave_srv("/fmm/ask_again")
         return self.name
 
     def getAge(self):
@@ -50,22 +50,22 @@ class FeatureFromVoice():
             elif age_res.result:
                 self.age = age_res.res_data
                 tts_srv("Your age is" + self.age)
-                tts_srv("Is this OK? Please answer yes or no")
-                # wave_srv("/fmm/answer_yn")
+                # tts_srv("Is this OK? Please answer yes or no")
+                wave_srv("/fmm/answer_yn")
                 if self.yesNo():
                     break
                 else:
-                    tts_srv("Sorry. I'm going to ask you one more time.")
-                    # wave_srv("/fmm/ask_again")
+                    # tts_srv("Sorry. I'm going to ask you one more time.")
+                    wave_srv("/fmm/ask_again")
             else:
-                tts_srv("Sorry. I'm going to ask you one more time.")
-                # wave_srv("/fmm/ask_again")
+                # tts_srv("Sorry. I'm going to ask you one more time.")
+                wave_srv("/fmm/ask_again")
         return self.age
 
     def getSex(self):
         self.sex = "null"
-        tts_srv("Are you a female? Please answer with yes or no")
-        # wave_srv("/fmm/sex_q")
+        # tts_srv("Are you a female? Please answer with yes or no")
+        wave_srv("/fmm/sex_q")
         result = self.yes_no_srv().result
         if result:
             self.sex= "female"
@@ -77,19 +77,19 @@ class FeatureFromVoice():
 class FeatureFromRecog():
     def __init__(self):
         # Service
-        self.height_srv = rospy.ServiceProxy('/person_feature/height', SetFloat)
+        self.height_srv = rospy.ServiceProxy('/person_feature/height_estimation', SetFloat)
         self.cloth_srv  = rospy.ServiceProxy('/person_feature/cloth_color', SetStr)
         # Value
         self.height      = "null"
         self.cloth_color = "null"
 
     def getHeight(self):
-        height = 0.00
-        height = self.height().data
-        if height == -1:
+        # height = SetFloat()
+        height = self.height_srv()
+        if height.data == -1:
             return False
         else:
-            self.height = str(height)
+            self.height = str(round(height.data, 1))
             return self.height
 
     def getClothColor(self):
@@ -106,6 +106,7 @@ class LocInfo():
         self.human_dict = {}
         self.loc_name_list = list(self.loc_dict.keys())
         self.loc_name      = "null"
+        self.result = 0.00
 
     # 複数の座標のうちx, yに一番近い座標の名前を求める
     def nearPoint(self, target_name):
@@ -124,6 +125,9 @@ class LocInfo():
             print dist
             if stdval > dist:
                 stdval = dist
-                loc_result = self.loc_name
-        print loc_result
-        return loc_result
+                # loc_result = self.loc_name
+                self.result = self.loc_name
+        # print loc_result
+        print self.result
+        # return loc_result
+        return self.result
