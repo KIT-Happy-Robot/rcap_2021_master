@@ -79,19 +79,19 @@ class FeatureFromVoice():
 class FeatureFromRecog():
     def __init__(self):
         # Service
-        self.height_srv = rospy.ServiceProxy('/person_feature/height', SetFloat)
+        self.height_srv = rospy.ServiceProxy('/person_feature/height_estimation', SetFloat)
         self.cloth_srv  = rospy.ServiceProxy('/person_feature/cloth_color', SetStr)
         # Value
         self.height      = "null"
         self.cloth_color = "null"
 
     def getHeight(self):
-        height = 0.00
-        height = self.height().data
-        if height == -1:
+        # height = SetFloat()
+        height = self.height_srv()
+        if height.data == -1:
             return False
         else:
-            self.height = str(height)
+            self.height = str(round(height.data, 1))
             return self.height
 
     def getClothColor(self):
@@ -108,6 +108,7 @@ class LocInfo():
         self.human_dict = {}
         self.loc_name_list = list(self.loc_dict.keys())
         self.loc_name      = "null"
+        self.result = 0.00
 
     # 複数の座標のうちx, yに一番近い座標の名前を求める
     def nearPoint(self, target_name):
@@ -126,6 +127,7 @@ class LocInfo():
             print dist
             if stdval > dist:
                 stdval = dist
+<<<<<<< HEAD
                 loc_result = self.loc_name
         print loc_result
         return loc_result
@@ -140,3 +142,11 @@ class SaveInfo():
         file_name = name + ".yaml"
         with open(os.path.join(self.data_path, file_name), "w") as yf:
             yaml.dump(data, yf, default_flow_style = False)
+=======
+                # loc_result = self.loc_name
+                self.result = self.loc_name
+        # print loc_result
+        print self.result
+        # return loc_result
+        return self.result
+>>>>>>> 7ba29e814a11d0dd26e6e139a8454a1bff330983
