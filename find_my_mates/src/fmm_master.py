@@ -36,7 +36,7 @@ class ApproachGuest(smach.State):
         rospy.loginfo("Executing state: APPROACH_GUEST")
         guest_num = userdata.g_count_in
         guest_name = "human_" + str(guest_num)
-        tts_srv("Move to guest")
+        # tts_srv("Move to guest")
         wave_srv("/fmm/move_guest")
         rospy.sleep(0.5)
         self.navi_srv('living room')
@@ -70,6 +70,7 @@ class FindFeature(smach.State):
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         self.li = LocInfo()
         self.ffv = FeatureFromVoice()
+        self.ffr = FeatureFromRecog()
         self.guest_name  = "null"
         self.guest_loc   = "null"
         self.gn_sentence = "null"
@@ -88,11 +89,13 @@ class FindFeature(smach.State):
         self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         # self.gn_sentence = (self.guest_name + " is near table")
         if userdata.g_count_in == 0:
+            # self.f1_sentence = "Height is " + self.ffr.getHeight()
+            # self.f2_sentence = "Cloth color is " + self.ffr.getClothColor()
             self.f1_sentence = "Gender is " + self.ffv.getSex()
             self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 1:
-            self.f1_sentence = FeatureFromRecog.getHeight()
-            self.f2_sentence = FeatureFromRecog.getClothColor()
+            self.f1_sentence = "Height is about " + self.ffr.getHeight() + " cm"
+            self.f2_sentence = "Cloth color is " + self.ffr.getClothColor()
             # self.f1_sentence = "Gender is " + self.ffv.getSex()
             # self.f2_sentence = "Age is " + self.ffv.getAge()
             pass
