@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from scipy.spatial import distance
+import os
+import yaml
 import tf
 import rospy
 import rosparam
@@ -127,3 +129,14 @@ class LocInfo():
                 loc_result = self.loc_name
         print loc_result
         return loc_result
+
+class SaveInfo():
+    def __init__(self):
+        # self.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
+        self.data_path = roslib.packages.get_pkg_dir("find_my_mate") + "config/"
+
+    def saveInfo(self, name, data):
+        rospy.loginfo('Save feature')
+        file_name = name + ".yaml"
+        with open(os.path.join(self.data_path, file_name), "w") as yf:
+            yaml.dump(data, yf, default_flow_style = False)
