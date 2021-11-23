@@ -6,7 +6,7 @@ import rosparam
 import roslib
 import smach
 import smach_ros
-from fmmmod import FeatureFromVoice, FeatureFromRecog,  LocInfo
+from fmmmod import FeatureFromVoice, FeatureFromRecog,  LocInfo, SaveInfo
 from std_msgs.msg import Float64
 from happymimi_msgs.srv import SimpleTrg, StrTrg
 from happymimi_navigation.srv import NaviLocation, NaviCoord
@@ -114,6 +114,7 @@ class TellFeature(smach.State):
                              output_keys = ['g_count_out'])
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
+        slef.save_srv = rospy.ServiceProxy('/recognition/save', )
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Value
@@ -138,6 +139,9 @@ class TellFeature(smach.State):
         for i in range(len(self.sentence_list)):
             tts_srv(self.sentence_list[i])
             i += 1
+        # yamlにでーたを保存
+        si.saveInfo("person_" + guest_num, self.sentence_list)
+        # self.save_srv()
         userdata.g_count_out = guest_num + 1
         return 'tell_finish'
 

@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from scipy.spatial import distance
 import os
 import yaml
+from scipy.spatial import distance
 import tf
 import rospy
 import rosparam
@@ -91,7 +91,7 @@ class FeatureFromRecog():
         if height.data == -1:
             return False
         else:
-            self.height = str(round(height.data, 1))
+            self.height = str(round(height.data))
             return self.height
 
     def getClothColor(self):
@@ -127,26 +127,16 @@ class LocInfo():
             print dist
             if stdval > dist:
                 stdval = dist
-<<<<<<< HEAD
                 loc_result = self.loc_name
         print loc_result
         return loc_result
 
 class SaveInfo():
     def __init__(self):
-        # self.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
-        self.data_path = roslib.packages.get_pkg_dir("find_my_mate") + "config/"
+        self.data_path = roslib.packages.get_pkg_dir("find_my_mates") + "/config/"
 
     def saveInfo(self, name, data):
         rospy.loginfo('Save feature')
         file_name = name + ".yaml"
         with open(os.path.join(self.data_path, file_name), "w") as yf:
             yaml.dump(data, yf, default_flow_style = False)
-=======
-                # loc_result = self.loc_name
-                self.result = self.loc_name
-        # print loc_result
-        print self.result
-        # return loc_result
-        return self.result
->>>>>>> 7ba29e814a11d0dd26e6e139a8454a1bff330983
