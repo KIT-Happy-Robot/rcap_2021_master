@@ -152,6 +152,7 @@ class Return(smach.State):
 if __name__=='__main__':
     rospy.init_node('cml_master')
     rospy.loginfo("Start Carry My Luggage")
+    rospy.sleep(1.5)
     tts_srv("/cml/start_cml")
     sm_top = smach.StateMachine(outcomes = ['finish_sm_top'])
     sm_top.userdata.GOP_count = 0

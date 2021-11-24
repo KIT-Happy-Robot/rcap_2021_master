@@ -34,6 +34,7 @@ class ApproachGuest(smach.State):
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: APPROACH_GUEST")
+        # return 'approach_finish'
         guest_num = userdata.g_count_in
         guest_name = "human_" + str(guest_num)
         # tts_srv("Move to guest")
@@ -114,11 +115,12 @@ class TellFeature(smach.State):
                              output_keys = ['g_count_out'])
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
-        slef.save_srv = rospy.ServiceProxy('/recognition/save', )
+        # slef.save_srv = rospy.ServiceProxy('/recognition/save', )
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Value
         self.sentence_list = []
+        self.si = SaveInfo()
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: TELL_FUATURE")
@@ -128,6 +130,7 @@ class TellFeature(smach.State):
         wave_srv("/fmm/move_operator")
         rospy.sleep(0.5)
         navi_result = self.navi_srv('operator').result
+        # navi_result = True
         self.head_pub.publish(-20)
         if navi_result:
             # tts_srv("I'll give you the guest information.")
@@ -140,7 +143,7 @@ class TellFeature(smach.State):
             tts_srv(self.sentence_list[i])
             i += 1
         # yamlにでーたを保存
-        si.saveInfo("person_" + guest_num, self.sentence_list)
+        # self.si.saveInfo("person_" + guest_num, self.sentence_list)
         # self.save_srv()
         userdata.g_count_out = guest_num + 1
         return 'tell_finish'

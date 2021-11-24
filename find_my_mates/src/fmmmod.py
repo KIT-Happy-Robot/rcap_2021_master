@@ -6,6 +6,7 @@ from scipy.spatial import distance
 import tf
 import rospy
 import rosparam
+import roslib
 from happymimi_msgs.srv import SimpleTrg, StrTrg, StrToStr, SetFloat, SetStr
 from happymimi_voice_msgs.srv import TTS, YesNo
 
