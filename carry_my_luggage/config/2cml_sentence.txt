@@ -1,6 +1,7 @@
 ファイル名: 文章
 /cml/start_cml: "Start carry my luggage"
 /cml/finish_cml: "Finish carry my luggage. Thank you very much"
+/cml/which_bag: "Which bag should I grasp?"
 /cml/pass_mimi: "Please give it to me"
 /cml/pass_thank: "Thank you"
 /cml/follow_you: "I'll follow you."

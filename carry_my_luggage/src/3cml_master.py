@@ -29,25 +29,40 @@ tts_srv = rospy.ServiceProxy('/waveplay_srv', StrTrg)
 class FindBag(smach.State):
     def __init__(self):
         smach.State.__init__(self, outcomes = ['find_success',
-                                               'find_failure'])
+                                               'find_failure'],
+                                   input_keys = ['find_angle_in'],
+                                   output_keys = ['find_angle_out'])
+        # Publisher
+        self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Subscriber
         rospy.Subscriber('left_right_recognition', String, self.poseCB)
         # Module
         self.base_control = BaseControl()
+        # Value
+        self.pose_msg = 'NULL'
 
     def poseCB(self, receive_msg):
         self.pose_msg = receive_msg.data
 
     def execute(self, userdata):
-        rospy.sleep(0.5)
-        if self.pose_msg == '0:left':
-            self.base_control.rotateAngle(20)
-            return 'find_success'
-        elif self.pose_msg == '0:right':
-            self.base_control.rotateAngle(-20)
-            return 'find_success'
-        else:
-            return 'find_failure'
+        tts_srv('/cml/which_bag')
+        rospy.sleep(1.0)
+        find_angle = userdata.find_angle_in
+        self.head_pub.publish(-5.0)
+        while not rospy.is_shutdown():
+            rospy.sleep(0.5)
+            if self.pose_msg == '1:left':
+                self.head_pub.publish(10)
+                self.base_control.rotateAngle(-find_angle)
+                userdata.find_angle_out = find_angle
+                return 'find_success'
+            elif self.pose_msg == '1:right':
+                self.head_pub.publish(10)
+                self.base_control.rotateAngle(find_angle)
+                userdata.find_angle_out = -find_angle
+                return 'find_success'
+            else:
+                pass
 
 
 class GraspOrPass(smach.State):
@@ -55,11 +70,14 @@ class GraspOrPass(smach.State):
         smach.State.__init__(self, outcomes = ['GRASP_finish',
                                                'PASS_finish',
                                                'GRASP_failure'],
-                                   input_keys = ['GOP_count_in'])
+                                   input_keys = ['GOP_count_in',
+                                                 'find_angle_in'])
         # Publisher
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # ServiceProxy
         self.arm_srv = rospy.ServiceProxy('/servo/arm', StrTrg)
+        # Module
+        self.base_control = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: GRASP_OR_PASS')
@@ -69,6 +87,7 @@ class GraspOrPass(smach.State):
             result = self.arm_srv('receive')
             tts_srv('/cml/pass_thank')
             self.arm_srv('carry')
+            self.base_control.rotateAngle(userdata.find_angle_in)
             return 'GRASP_finish'
             #if result:
                 #tts_srv('Thank You')
@@ -179,19 +198,24 @@ if __name__=='__main__':
     tts_srv("/cml/start_cml")
     sm_top = smach.StateMachine(outcomes = ['finish_sm_top'])
     sm_top.userdata.GOP_count = 0
+    sm_top.userdata.find_angle = 20
     with sm_top:
         smach.StateMachine.add(
                 'FIND_BAG',
                 FindBag(),
                 transitions = {'find_success':'GRASP_OR_PASS',
-                               'find_failure':'GRASP_OR_PASS'})
+                               'find_failure':'FIND_BAG'},
+                remapping = {'find_angle_in':'find_angle',
+                             'find_angle_out':'find_angle'})
 
+        smach.StateMachine.add(
                 'GRASP_OR_PASS',
                 GraspOrPass(),
                 transitions = {'GRASP_finish':'CHASER',
                                'PASS_finish':'RETURN',
                                'GRASP_failure':'GRASP_OR_PASS'},
-                remapping = {'GOP_count_in':'GOP_count'})
+                remapping = {'GOP_count_in':'GOP_count',
+                             'find_angle_in':'find_angle'})
 
         smach.StateMachine.add(
                 'CHASER',

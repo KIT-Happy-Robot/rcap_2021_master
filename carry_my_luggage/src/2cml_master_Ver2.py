@@ -100,12 +100,14 @@ class Chaser(smach.State):
             if self.cmd_sub == 0.0 and self.find_msg == 'NULL':
                 self.find_msg = 'lost_stop'
                 self.start_time = time.time()
-            elif self.cmd_sub == 0.0 and now_time >= 5.0 and self.find_msg == 'lost_stop':
+            elif self.cmd_sub == 0.0 and now_time >= 7.0 and self.find_msg == 'lost_stop':
+                self.base_control.rotateAngle(0, 0)
                 tts_srv("/cml/car_question")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
                     self.base_control.rotateAngle(0, 0)
+                    self.base_control.translateDist(-0.3, 0.3)
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
@@ -113,15 +115,17 @@ class Chaser(smach.State):
             elif self.find_msg == "lost":
                 self.start_time = time.time()
                 self.find_msg = 'lost_after'
-            elif self.find_msg == "lost_after" and now_time >= 3.0:
+            elif self.find_msg == "lost_after" and now_time >= 1.0:
+                self.base_control.rotateAngle(0, 0)
                 tts_srv("/cml/follow_lost")
                 self.find_msg = "lost_long"
-            elif self.find_msg == "lost_long" and now_time >= 13.0:
+            elif self.find_msg == "lost_long" and now_time >= 12.0:
                 tts_srv("/cml/car_question")
                 answer = self.yesno_srv().result
                 if answer:
                     self.chaser_pub.publish('stop')
                     self.base_control.rotateAngle(0, 0)
+                    self.base_control.translateDist(-0.3, 0.3)
                     userdata.PASS_count_out = pass_count + 1
                     return 'chaser_finish'
                 else:
