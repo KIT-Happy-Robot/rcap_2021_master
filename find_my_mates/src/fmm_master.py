@@ -99,6 +99,9 @@ class FindFeature(smach.State):
             self.f2_sentence = "Cloth color is " + self.ffr.getClothColor()
             # self.f1_sentence = "Gender is " + self.ffv.getSex()
             # self.f2_sentence = "Age is " + self.ffv.getAge()
+        elif userdata.g_count_in == 2:
+            self.f1_sentence = "Description1 is No information"
+            self.f2_sentence = "Description2 is No information"
             pass
         else:
             return 'find_finish'
@@ -115,7 +118,7 @@ class TellFeature(smach.State):
                              output_keys = ['g_count_out'])
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
-        # slef.save_srv = rospy.ServiceProxy('/recognition/save', )
+        slef.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Value
@@ -143,8 +146,7 @@ class TellFeature(smach.State):
             tts_srv(self.sentence_list[i])
             i += 1
         # yamlにでーたを保存
-        # self.si.saveInfo("person_" + guest_num, self.sentence_list)
-        # self.save_srv()
+        self.si.saveInfo("guest_" + guest_num, self.sentence_list)
         userdata.g_count_out = guest_num + 1
         return 'tell_finish'
 
