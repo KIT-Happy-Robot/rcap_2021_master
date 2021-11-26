@@ -42,7 +42,7 @@ class ApproachGuest(smach.State):
         rospy.sleep(0.5)
         self.navi_srv('living room')
         if guest_num == 0:
-            self.head_pub.publish(20)
+            self.head_pub.publish(0)
             result = self.gen_coord_srv().result
             # self.bc.rotateAngle(-10)
             # for i in range(3):
@@ -118,7 +118,7 @@ class TellFeature(smach.State):
                              output_keys = ['g_count_out'])
         # Service
         self.navi_srv = rospy.ServiceProxy('navi_location_server', NaviLocation)
-        slef.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
+        self.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
         # Topic
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Value
@@ -134,7 +134,7 @@ class TellFeature(smach.State):
         rospy.sleep(0.5)
         navi_result = self.navi_srv('operator').result
         # navi_result = True
-        self.head_pub.publish(-20)
+        self.head_pub.publish(-15)
         if navi_result:
             # tts_srv("I'll give you the guest information.")
             wave_srv("/fmm/start_req")
@@ -146,7 +146,7 @@ class TellFeature(smach.State):
             tts_srv(self.sentence_list[i])
             i += 1
         # yamlにでーたを保存
-        self.si.saveInfo("guest_" + guest_num, self.sentence_list)
+        self.si.saveInfo("guest_" + str(guest_num), self.sentence_list)
         userdata.g_count_out = guest_num + 1
         return 'tell_finish'
 
@@ -163,7 +163,7 @@ class Operation(smach.State):
             # tts_srv("Start Find My Mates")
             wave_srv("/fmm/start_fmm")
             return 'start_test'
-        elif guest_count > 1:
+        elif guest_count > 2:
             # tts_srv("Finish Find My Mates. Thank you very much")
             wave_srv("/fmm/finish_fmm")
             return 'all_finish'

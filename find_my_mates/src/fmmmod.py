@@ -37,8 +37,10 @@ class FeatureFromVoice():
                 self.name = name_res.res_data
                 tts_srv("Hi " + self.name)
                 break
-            else:
+            elif i == 3:
+                break
                 # tts_srv("Sorry. I'm going to ask you one more time.")
+            else:
                 wave_srv("/fmm/ask_again")
                 self.name = "somebody"
         return self.name
@@ -136,7 +138,7 @@ class SaveInfo():
     def __init__(self):
         self.data_path = roslib.packages.get_pkg_dir("find_my_mates") + "/guest_info/"
         # Service
-        slef.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
+        self.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
 
     def saveInfo(self, name, data):
         rospy.loginfo('Save feature')
