@@ -42,7 +42,7 @@ class FeatureFromVoice():
                 # tts_srv("Sorry. I'm going to ask you one more time.")
             else:
                 wave_srv("/fmm/ask_again")
-                self.name = "somebody"
+                self.name = "guest"
         return self.name
 
     def getAge(self):
@@ -50,7 +50,7 @@ class FeatureFromVoice():
         for i in range(3):
             age_res = self.feature_srv(req_data = "old")
             if i == 3:
-                self.age + "unknown"
+                self.age = "unknown"
                 break
             elif age_res.result:
                 self.age = age_res.res_data
@@ -61,7 +61,8 @@ class FeatureFromVoice():
                     break
                 else:
                     # tts_srv("Sorry. I'm going to ask you one more time.")
-                    wave_srv("/fmm/ask_again")
+                    # wave_srv("/fmm/ask_again")
+                    pass
             else:
                 # tts_srv("Sorry. I'm going to ask you one more time.")
                 wave_srv("/fmm/ask_again")
