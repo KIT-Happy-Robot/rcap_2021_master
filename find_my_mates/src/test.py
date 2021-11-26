@@ -6,7 +6,7 @@ import yaml
 import roslib
 import rospy
 import rosparam
-# from fmmmod import LocInfo, FeatureFromRecog
+from fmmmod import LocInfo, FeatureFromRecog, FeatureFromVoice
 
 
 class SaveInfo():
@@ -25,8 +25,13 @@ if __name__ == '__main__':
     rospy.init_node('fmmmod_test')
     # li = LocInfo()
     # ffr = FeatureFromRecog()
+    # ffr = FeatureFromRecog()
+    ffv = FeatureFromVoice()
+    # result = ffv.getName()
+    result = ffv.getAge()
+    # result = ffv.getSex()
     # result = li.nearPoint("human_1")
     # result = ffr.getHeight()
-    data = ["a", "b", "c"]
-    si = SaveInfo()
-    si.saveInfo("human_1", data)
+    # data = ["a", "b", "c"]
+    # si = SaveInfo()
+    # si.saveInfo("human_1", data)

@@ -33,6 +33,7 @@ class FeatureFromVoice():
         self.name = "null"
         for i in range(3):
             name_res = self.feature_srv(req_data = "name")
+            print name_res.res_data
             if name_res.result:
                 self.name = name_res.res_data
                 tts_srv("Hi " + self.name)
