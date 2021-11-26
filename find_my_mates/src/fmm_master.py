@@ -42,7 +42,7 @@ class ApproachGuest(smach.State):
         rospy.sleep(0.5)
         self.navi_srv('living room')
         if guest_num == 0:
-            self.head_pub.publish(10)
+            self.head_pub.publish(20)
             result = self.gen_coord_srv().result
             # self.bc.rotateAngle(-10)
             # for i in range(3):

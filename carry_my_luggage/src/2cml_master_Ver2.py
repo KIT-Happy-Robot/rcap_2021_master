@@ -36,11 +36,13 @@ class GraspOrPass(smach.State):
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # ServiceProxy
         self.arm_srv = rospy.ServiceProxy('/servo/arm', StrTrg)
+        # Module
+        self.base_control = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo('Executing state: GRASP_OR_PASS')
         if userdata.GOP_count_in == 0:
-            self.head_pub.publish(10)
+            self.base_control.translateDist(0.8)
             tts_srv('/cml/pass_mimi')
             result = self.arm_srv('receive')
             tts_srv('/cml/pass_thank')
