@@ -134,10 +134,13 @@ class LocInfo():
 
 class SaveInfo():
     def __init__(self):
-        self.data_path = roslib.packages.get_pkg_dir("find_my_mates") + "/config/"
+        self.data_path = roslib.packages.get_pkg_dir("find_my_mates") + "/guest_info/"
+        # Service
+        slef.save_srv = rospy.ServiceProxy('/recognition/save', StrTrg)
 
     def saveInfo(self, name, data):
         rospy.loginfo('Save feature')
         file_name = name + ".yaml"
         with open(os.path.join(self.data_path, file_name), "w") as yf:
             yaml.dump(data, yf, default_flow_style = False)
+        self.save_srv(data = self.data_path)
