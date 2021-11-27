@@ -11,7 +11,7 @@ import roslib
 import sys
 from happymimi_navigation.srv import NaviLocation
 from happymimi_msgs.srv import StrTrg
-from happymimi_manipulation_msgs.srv import RecognitionToGrasping, RecognitionToGraspingResponse
+from happymimi_manipulation_msgs.srv import RecognitionToGrasping, RecognitionToGraspingRequest
 path = roslib.packages.get_pkg_dir('happymimi_teleop') + '/src/'
 sys.path.insert(0, path)
 from base_control import BaseControl
@@ -40,7 +40,7 @@ class FinalDemo():
         self.tts_srv('/fd/grasp_start')
         while not rospy.is_shutdown():
             rospy.sleep(0.3)
-            self.grasp_result = self.grasp_srv(RecognitionToGraspingResponse('any')).result #####
+            self.grasp_result = self.grasp_srv(RecognitionToGraspingRequest(target_name='any')).result #####
             if self.grasp_result == False:
                 if grasp_count >= 3: #####
                     self.tts_srv("/fd/grasp_failed")
@@ -59,7 +59,7 @@ class FinalDemo():
         self.arm_srv('give')
         rospy.sleep(0.5)
         #self.tts_srv('/fd/return_table')
-        self.bc.rotateAngle(-self.rotate)
+        self.bc.rotateAngle(self.rotate)
         self.navi_srv('Tall table')
         rospy.sleep(0.5)
         self.bc.rotateAngle(self.rotate)
