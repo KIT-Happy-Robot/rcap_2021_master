@@ -1,0 +1,8 @@
+ファイル名: 文章
+/fd/start_fd: "Start Demonstration."
+/fd/finish_fd: "Finish Demonstration. Thank you very much."
+/fd/grasp_start: "Start grasping the object."
+/fd/grasp_failed: "Sorry I couldn't grasp it."
+/fd/grasp_retry: "Grasp failed. I'll try again."
+/fd/grasp_success: "Successfully grasped."
+/fd/give_object: "Here you are"
