@@ -6,3 +6,4 @@
 /fd/grasp_retry: "Grasp failed. I'll try again."
 /fd/grasp_success: "Successfully grasped."
 /fd/give_object: "Here you are"
+/fd/return_table: "Return to Tall table."

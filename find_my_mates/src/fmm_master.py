@@ -43,6 +43,12 @@ class ApproachGuest(smach.State):
         self.navi_srv('living room')
         if guest_num == 0:
             self.head_pub.publish(0)
+            rospy.sleep(1.0)
+            result = self.gen_coord_srv().result
+        elif guest_num == 1:
+            self.head_pub.publish(0)
+            self.bc.rotateAngle(-55, 0.2)
+            rospy.sleep(5.0)
             result = self.gen_coord_srv().result
             # self.bc.rotateAngle(-10)
             # for i in range(3):
@@ -52,6 +58,11 @@ class ApproachGuest(smach.State):
                 # else:
                     # break
                     # self.bc.rotateAngle(-10)
+        elif guest_num == 2:
+            self.head_pub.publish(0)
+            self.bc.rotateAngle(-50, 0.2)
+            rospy.sleep(5.0)
+            result = self.gen_coord_srv().result
         else:
             pass
         result = self.ap_srv(data = guest_name)
@@ -95,9 +106,9 @@ class FindFeature(smach.State):
             self.f1_sentence = "Gender is " + self.ffv.getSex()
             self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 1:
-            self.f1_sentence = "Height is about " + self.ffr.getHeight() + " cm"
+            # self.f1_sentence = "Height is about " + self.ffr.getHeight() + " cm"
+            self.f1_sentence = "Gender is " + self.ffv.getSex()
             self.f2_sentence = "Cloth color is " + self.ffr.getClothColor()
-            # self.f1_sentence = "Gender is " + self.ffv.getSex()
             # self.f2_sentence = "Age is " + self.ffv.getAge()
         elif userdata.g_count_in == 2:
             self.f1_sentence = "Description1 is No information"
@@ -124,13 +135,16 @@ class TellFeature(smach.State):
         # Value
         self.sentence_list = []
         self.si = SaveInfo()
+        self.bc = BaseControl()
 
     def execute(self, userdata):
         rospy.loginfo("Executing state: TELL_FUATURE")
         guest_num = userdata.g_count_in
         self.sentence_list = userdata.future_in
         # tts_srv("Move to operator")
+        rospy.sleep(0.2)
         wave_srv("/fmm/move_operator")
+        self.bc.rotateAngle(110, 0.2)
         rospy.sleep(0.5)
         navi_result = self.navi_srv('operator').result
         # navi_result = True
@@ -148,6 +162,7 @@ class TellFeature(smach.State):
         # yamlにでーたを保存
         self.si.saveInfo("guest_" + str(guest_num), self.sentence_list)
         userdata.g_count_out = guest_num + 1
+        # self.bc.rotateAngle(90, 0.3)
         return 'tell_finish'
 
 
@@ -156,18 +171,22 @@ class Operation(smach.State):
         smach.State.__init__(self, outcomes = ['start_test', 'all_finish'],
                              input_keys = ['g_count_in'])
 
+        self.bc = BaseControl()
+
     def execute(self, userdata):
         rospy.loginfo("Executing state: OPERATION")
         guest_count = userdata.g_count_in
         if guest_count == 0:
             # tts_srv("Start Find My Mates")
             wave_srv("/fmm/start_fmm")
+            self.bc.rotateAngle(90, 0.2)
             return 'start_test'
         elif guest_count > 2:
             # tts_srv("Finish Find My Mates. Thank you very much")
             wave_srv("/fmm/finish_fmm")
             return 'all_finish'
         else:
+            self.bc.rotateAngle(90, 0.2)
             return 'start_test'
 
 
