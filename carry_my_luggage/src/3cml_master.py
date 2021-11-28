@@ -3,8 +3,8 @@
 #----------------------------------------------------
 # Title: RCAP2021 Carry My Luggage
 # Author: Yusuke Kanazawa
-# Date: 2021/11/
-# Memo:
+# Date: 2021/11/26
+# Memo: 
 #----------------------------------------------------
 import rospy
 import roslib
