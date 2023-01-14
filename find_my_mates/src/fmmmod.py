@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import os
 import yaml
@@ -33,7 +33,7 @@ class FeatureFromVoice():
         self.name = "null"
         for i in range(3):
             name_res = self.feature_srv(req_data = "name")
-            print name_res.res_data
+            print (name_res.res_data)
             if name_res.result:
                 self.name = name_res.res_data
                 tts_srv("Hi " + self.name)
@@ -128,12 +128,12 @@ class LocInfo():
             if i == 0:
                 stdval = distance.euclidean(h_xy, l_xy)
             dist = distance.euclidean(h_xy, l_xy)
-            print self.loc_name
-            print dist
+            print (self.loc_name)
+            print (dist)
             if stdval > dist:
                 stdval = dist
                 loc_result = self.loc_name
-        print loc_result
+        print (loc_result)
         return loc_result
 
 class SaveInfo():

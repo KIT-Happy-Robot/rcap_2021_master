@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #----------------------------------------------------
 # Title: RCAP2021 Carry My Luggage
@@ -35,7 +35,7 @@ class FindBag(smach.State):
         # Publisher
         self.head_pub = rospy.Publisher('/servo/head', Float64, queue_size = 1)
         # Subscriber
-        rospy.Subscriber('left_right_recognition', String, self.poseCB)
+        rospy.Subscriber('/left_right_recognition', String, self.poseCB)
         # Module
         self.base_control = BaseControl()
         # Value
@@ -51,14 +51,15 @@ class FindBag(smach.State):
         rospy.sleep(1.5)
         while not rospy.is_shutdown():
             rospy.sleep(0.5)
-            if self.pose_msg == 'left':
+            print(self.pose_msg)
+            if self.pose_msg == '0:left':
                 self.head_pub.publish(10)
                 tts_srv('/cml/find_bag')
                 self.base_control.rotateAngle(-find_angle)
                 userdata.find_angle_out = find_angle
                 tts_srv('/cml/bag_left')
                 return 'find_success'
-            elif self.pose_msg == 'right':
+            elif self.pose_msg == '0:right':
                 self.head_pub.publish(10)
                 tts_srv('/cml/find_bag')
                 self.base_control.rotateAngle(find_angle)
@@ -66,6 +67,7 @@ class FindBag(smach.State):
                 tts_srv('/cml/bag_right')
                 return 'find_success'
             else:
+                print("else")
                 pass
 
 

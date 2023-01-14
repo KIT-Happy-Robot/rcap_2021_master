@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import sys
 import rospy
@@ -96,7 +96,7 @@ class FindFeature(smach.State):
         # tts_srv("Excuse me. I have a question for you")
         wave_srv("/fmm/start_q")
         self.guest_name = self.ffv.getName()
-        print self.guest_name
+        print (self.guest_name)
         self.guest_loc = self.li.nearPoint("human_" + str(userdata.g_count_in))
         self.gn_sentence = self.guest_name + " is near " + self.guest_loc
         # self.gn_sentence = (self.guest_name + " is near table")
@@ -155,7 +155,7 @@ class TellFeature(smach.State):
         else:
             # tts_srv("I'm sorry. I couldn't navigate to the operator's location. I will provide the features from here.")
             wave_srv("/fmm/start_req_here")
-        print self.sentence_list
+        print (self.sentence_list)
         for i in range(len(self.sentence_list)):
             tts_srv(self.sentence_list[i])
             i += 1
